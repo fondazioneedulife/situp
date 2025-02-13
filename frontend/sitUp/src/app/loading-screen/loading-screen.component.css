@@ -1,0 +1,32 @@
+.componente-background {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to right, #00A0D2, #C70973);
+    background-size: 200% 200%;
+    animation: gradientAnimation 2s ease infinite;
+    height: 100vh;
+}
+
+img {
+    max-width: 30%;
+    height: auto;
+}
+
+@keyframes gradientAnimation {
+    0% {
+        background-position: 100% 0%;
+    }
+
+    50% {
+        background-position: 0% 100%;
+    }
+
+    100% {
+        background-position: 100% 0%;
+    }
+}
+
+@media (min-width: 768px) {
+    
+}
