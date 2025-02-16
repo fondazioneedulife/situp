@@ -9,7 +9,7 @@
 }
 
 img {
-    max-width: 50%;
+    max-width: 40%;
     height: auto;
 }
 
@@ -24,7 +24,7 @@ img {
 
 button {
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     font-family: 'Jost', serif;
     display: flex;
@@ -34,16 +34,17 @@ button {
 
 /* Bottone Accedi */
 button:first-of-type {
-    padding: 15px 45px;
+    font-weight: 600;
+    padding: 10px 15px;
     background-color: #FFD410;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     color: #ffffff;
-    width: 80%;
+    width: 70%;
 }
 
 /* Bottone Registrati con logo Microsoft */
 button:last-of-type {
-    padding: 20px 10px;
+    padding: 15px;
     background-color: #F3F3F3;
     color: #ffffff;
     display: flex;
@@ -51,11 +52,11 @@ button:last-of-type {
     justify-content: center;
     border: 1px solid #ccc;
     background-image: url('https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg');
-    background-size: 80%;
+    background-size: 70%;
     background-position: center;
     background-repeat: no-repeat;
-    
     width: 100%;
+    box-shadow: inset 0 4px 5px rgba(0, 0, 0, 0.3);
 }
 
 button:last-of-type::before {
@@ -65,4 +66,25 @@ button:last-of-type::before {
     height: 20px;
     background-size: contain;
     background-repeat: no-repeat;
+}
+
+/* DA PC */
+@media (min-width: 768px) {
+    img {
+        max-width: 30%;
+        height: 40%;
+    }
+    button:first-of-type {
+        width: 25%;
+    }
+
+    button:last-of-type {
+        width: 30%;
+    }
+
+    button:hover {
+        transform: scale(1.05);
+        transition: transform 0.3s ease-in-out;
+        opacity: 0.98;
+    }
 }
