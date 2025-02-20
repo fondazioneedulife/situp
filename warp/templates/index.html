@@ -1,0 +1,18 @@
+{% extends 'base_logged.html' %}
+
+{% block header %}
+{{ super() }}
+{% endblock %}
+
+
+{% block content %}
+{{ super() }}
+
+<div class="index_container" style="background: linear-gradient(to right, #00A0D2, #C70973);
+    background-size: 100% 100%;">
+    <div>
+        <img src="{{ url_for('static', filename='images/Logo-circle-bw.svg') }}"><br>
+    </div>
+</div>
+
+{% endblock %}
