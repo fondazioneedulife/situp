@@ -31,7 +31,7 @@ To install SitUp, follow these steps:
     ```
 
 ## Usage
-1. Open your web browser and navigate to `http://localhost:3000`.
+1. Open your web browser and navigate to `http://localhost:5000`.
 2. Sign up for a new account or log in with your existing credentials.
 3. Start booking desks and meeting rooms as needed.
 
