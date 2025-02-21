@@ -2,6 +2,6 @@ flask == 2.2.*
 jsonschema
 xlsxwriter
 peewee
-psycopg2
+psycopg2-binary
 orjson
 ldap3
