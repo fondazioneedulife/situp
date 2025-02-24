@@ -246,6 +246,7 @@ NAV {
 
 #action_modal .modal-content P {
     font-weight: bold;
+    font-size: 20px;
 }
 
 #action_modal .modal-content TABLE {
