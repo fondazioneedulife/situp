@@ -84,8 +84,8 @@ warpGlobals.i18n.phrases = {
     'User name': 'Nome utente',
     'Zone': 'Zona',
     'Seat': 'Posto',
-    'Time': 'Tempo',
-    'Login': 'Accedi',
+    'Time': 'Data di Prenotazione',
+    'Login': 'Username',
     'From': 'Da',
     'To': 'A',
     'Type': 'Tipo',
@@ -153,7 +153,7 @@ warpGlobals.i18n.phrases = {
     "Change unsuccessfull": "Modifica non riuscita",
     "Zones": "Zone",
     "Zone name": "Nome zona",
-    "Zone group": "Gruppo zona",
+    "Zone group": "Numero zona",
     "Num of admins": "Numero di amministratori",
     "Num of users": "Numero di utenti",
     "Num of viewers": "Numero di spettatori",
@@ -163,7 +163,7 @@ warpGlobals.i18n.phrases = {
     "You will delete the log of all past bookings in this zone. It is usually a better idea to unassign all users from the zone to make it inaccessible.":
         "Eliminerai il log di tutte le prenotazioni passate in questa zona. Di solito è meglio rimuovere tutti gli utenti dalla zona per renderla inaccessibile.",
     "Are you sure to delete zone: %{zone_name}": "Sei sicuro di voler eliminare la zona: %{zone_name}?",
-    "Zone name and zone group cannot be empty.": "Il nome della zona e il gruppo della zona non possono essere vuoti.",
+    "Zone name and zone group cannot be empty.": "Il nome della zona e il gruppo della zona non possono essere vuoti, il gruppo zona puo essere solo un numero.",
     'Users assigned to: %{zone_name}': 'Utenti assegnati a: %{zone_name}',
     "Zone role": "Ruolo zona",    
     zoneRoles: {
