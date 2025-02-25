@@ -29,7 +29,7 @@ CREATE TABLE groups (
 
 CREATE TABLE zone (
     id SERIAL PRIMARY KEY,
-    zone_group integer NOT NULL,
+    zone_group text NOT NULL,
     name text NOT NULL,
     iid integer,
     FOREIGN KEY (iid) REFERENCES blobs(id) ON DELETE SET NULL
