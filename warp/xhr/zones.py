@@ -78,7 +78,7 @@ addOrEditSchema = {
     "properties": {
         "id" : {"type" : "integer"},
         "name" : {"type" : "string"},
-        "zone_group" : {"type" : "integer"},
+        "zone_group" : {"type" : "string"},
     },
     "required": ["name", "zone_group"]
 }

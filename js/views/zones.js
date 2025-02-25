@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
             {formatter:iconFormater, formatterParams:{icon:"edit",colorClass:"green-text text-darken-4"}, width:40, hozAlign:"center", cellClick:addEditClicked, headerSort:false, tooltip: TR('Edit zone')},
             {formatter:iconFormater, formatterParams:{icon:"map",colorClass:"green-text text-darken-4",iconClass:"material-icons"}, width:40, hozAlign:"center", cellClick:clickFuncFactory('zoneModify'), headerSort:false, tooltip: TR('Edit map')},
             {title:TR("Zone name"), field: "name", headerFilter:"input", headerFilterFunc:"starts"},
-            {title:TR("Zone group"), field: "zone_group", headerFilter:"number", headerFilterFunc:"="},
+            {title:TR("Zone group"), field: "zone_group", headerFilter:"input", headerFilterFunc:"="},
             {title:TR("Num of admins"), field: "admins" },
             {title:TR("Num of users"), field: "users" },
             {title:TR("Num of viewers"), field: "viewers" },
@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
 
                         resolved = true;
                         editModal.close();
-                        resolve({action:'save', id: id, name: zoneNameEl.value, zone_group: parseInt(zoneGroupEl.value) });
+                        resolve({action:'save', id: id, name: zoneNameEl.value, zone_group: zoneGroupEl.value });
                         break;
                     case deleteBtn:
 

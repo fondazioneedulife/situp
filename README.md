@@ -57,4 +57,24 @@ We welcome contributions to SitUp! To contribute, please follow these steps:
 SitUp is licensed under the [MIT License](LICENSE).
 
 ## Contact
+
 For any questions or support, please contact us at support@situp.com.
+COME LA DOBBIAMO USARE ADESSO IN LOCALE SENZA DOCKER (finchè non c`è l'autoreload)
+REQUISITI:
+- avere npm
+- python
+- docker
+- postgres (running)
+- venv
+
+`pushd js`
+`npm ci`
+`npm run build`
+`popd`
+
+`cd warp`
+create venv
+`source .venv/bin/activate`
+`cd ..`
+`pip install requirements.txt`
+`start.sh`
