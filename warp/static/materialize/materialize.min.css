@@ -1684,8 +1684,12 @@ audio:not([controls]){
     height:0
 }
 img{
-    border-style:none
+    border-style:none;
 }
+@media only screen and (max-width : 993px) {
+    img{
+        width: 90%;
+    }}
 svg:not(:root){
     overflow:hidden
 }
