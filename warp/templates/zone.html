@@ -138,23 +138,22 @@
     {{ super() }}
 
     <div class="zone_container">
-
+        
         <div id="zone_sidepanel">
-
             <div class="zone_sidepanel_topcontainer">
-
+        
                 <div class="input-field book-as_container">
                     <input type="text" id="book-as" class="autocomplete book-as_input" autocomplete="off">
                     <label for="book-as" class="active TR">Book as</label>
                 </div>
-
+        
                 <div class="zone_sidepanel_close sidenav-close" data-target="zone_sidepanel">
                     <i class="material-icons">close</i>
                 </div>
             </div>
-
+        
             <div class="zone_datetime_container">
-
+        
                 <div class="zone_datelist">
                     {% for w in nextWeek %}
                     <p>
@@ -168,13 +167,14 @@
                     </p>
                     {% endfor %}
                 </div>
-
+        
                 <div class="zone_timeslider">
                     <div id="timeslider-min" class="timeslider-hint">12:00</div>
                     <div id="timeslider" class="timeslider"></div>
                     <div id="timeslider-max" class="timeslider-hint">12:00</div>
                 </div>
             </div>
+
 
         </div>
 
@@ -188,7 +188,7 @@
             </div>
             <img src="{{ url_for('view.zoneImage', zid=zid) }}">
         </div>
-
+    
 {% endblock %}
 
 

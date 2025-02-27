@@ -163,9 +163,10 @@ NAV {
         overflow-y: auto;
         transform: translateX(-105%);
     }
-    .zone_container{
+
+   .zone_container{
         height: 100%;
-    }
+    } 
 
     /* nav header is becoming bigger from 601px, so we need to recalculate */
     @media only screen and (min-width: 601px) {
@@ -196,7 +197,6 @@ NAV {
     min-height: 0px;
     overflow: auto;
     position: relative;
-    display: flex;
     width: 100%;
     align-items: center;
     justify-content: center;
