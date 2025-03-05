@@ -5276,8 +5276,8 @@ textarea.materialize-textarea{
     top:0;
     width:20px;
     height:20px;
-    border:2px solid #ff6d00;
-    background-color:#ff6d00;
+    border:2px solid #2196f3;
+    background-color:#2196f3;
     z-index:0
 }
 [type=checkbox].filled-in.tabbed:focus+span:not(.lever):after{
@@ -6673,7 +6673,7 @@ input[type=range]::-ms-thumb{
     -webkit-flex:1 auto;
     -ms-flex:1 auto;
     flex:1 auto;
-    background-color:#ff6d00;
+    background-color:#00A0D2;
     color:#fff;
     padding:20px 22px;
     font-weight:500
@@ -6720,11 +6720,11 @@ input[type=range]::-ms-thumb{
     padding:0
 }
 .datepicker-table td.is-today{
-    color:#ff6d00
+    color:#00A0D2;
 }
 .datepicker-table td.is-selected{
-    background-color:#ff6d00;
-    color:#fff
+    background-color:#00A0D2;
+    color:#fff;
 }
 .datepicker-table td.is-outside-current-month,.datepicker-table td.is-disabled{
     color:rgba(0,0,0,.3);
@@ -6739,10 +6739,10 @@ input[type=range]::-ms-thumb{
     border-radius:50%;
     padding:0 5px;
     cursor:pointer;
-    color:inherit
+    color:inherit;
 }
 .datepicker-day-button:focus{
-    background-color:rgba(249,110,6,.25)
+    background-color:#00A0D2;
 }
 .datepicker-footer{
     width:280px;
@@ -6758,11 +6758,11 @@ input[type=range]::-ms-thumb{
     justify-content:space-between
 }
 .datepicker-cancel,.datepicker-clear,.datepicker-today,.datepicker-done{
-    color:#ff6d00;
+    color:#00A0D2;
     padding:0 1rem
 }
 .datepicker-clear{
-    color:#f44336
+    color:#00A0D2;
 }
 @media only screen and (min-width : 601px){
     .datepicker-modal{
