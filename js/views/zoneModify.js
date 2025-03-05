@@ -95,13 +95,13 @@ document.addEventListener("DOMContentLoaded", function(e) {
     let transformBtnUpdate = function(seat) {
         if (seatFactory.transformState()) {
             transformBtn.classList.remove('disabled');
-            transformBtn.classList.add('green');
+            transformBtn.classList.add('red');
             transformBtn.innerText = TR('btn.Finish alignment');
 
 
         }
         else {
-            transformBtn.classList.remove('green');
+            transformBtn.classList.remove('red');
             transformBtn.innerText = TR('btn.Align all');
             if (seat.isNew())
                 transformBtn.classList.add('disabled');
