@@ -8,6 +8,10 @@ NAV {
     z-index: 5;
 }
 
+.nav-color{
+    background-color: #2196F3;
+}
+
 .nav-wrapper DIV,A {
     height: 100%;
 }
