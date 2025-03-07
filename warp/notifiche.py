@@ -1,52 +1,67 @@
+import flask
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from werkzeug.security import check_password_hash
+from warp.db import Users, Groups, ACCOUNT_TYPE_ADMIN, ACCOUNT_TYPE_GROUP  # importa le tabelle e costanti dal tuo db.py
 import smtplib
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
-# Sender and receiver information
-sender_mail = 'andrea.canda88@gmail.com'
-# It's recommended to use environment variables or a secure method to handle passwords
-password = 'csri rkel zinr oggv'  # Ensure this is an App Password if using Gmail
-receiver_mail = 'andrea.canda88@gmail.com'
+bp = Blueprint('notify', __name__)
 
-# Email content
-subject = 'ATTENZIONE: SCRIVANIA OCCUPATA'
-message = ('Gentile dipendente,\n\n'
-           'La informiamo che la sua prenotazione per la scrivania è stata '
-           'cancellata a causa di una riunione all\'interno della vostra stanza.\n\n'
-           'Cordiali saluti,\n'
-           'Il Team')
+def send_email_notification(recipient_email, subject, body):
+    # Configurazione base per l'invio dell'email (meglio utilizzare variabili d'ambiente per dati sensibili)
+    sender_email = "noreplyhwgsababa@gmail.com"
+    password = "viez jxcb cpps gzhf"
 
-def send_mail(sender_mail, password, receiver_mail, subject, message):
-    smtp_server = 'smtp.gmail.com'
-    smtp_port = 587  # For TLS
-
-    # Create a multipart message
-    msg = MIMEMultipart()
-    msg['From'] = sender_mail
-    msg['To'] = receiver_mail
-    msg['Subject'] = subject
-
-    # Attach the message body
-    msg.attach(MIMEText(message, 'plain'))
+    msg = MIMEText(body)
+    msg["Subject"] = subject
+    msg["From"] = sender_email
+    msg["To"] = recipient_email
 
     try:
-        # Connect to the Gmail SMTP server
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.ehlo()  # Can be omitted; sometimes needed
-            server.starttls()  # Secure the connection
-            server.ehlo()  # Re-identify after starting TLS
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(sender_email, password)
+            server.sendmail(sender_email, recipient_email, msg.as_string())
+        return True
+    except Exception as e:
+        print("Errore nell'invio dell'email:", e)
+        return False
 
-            # Log in to the server
-            server.login(sender_mail, password)
+def notify_group():
+    # Se il metodo è POST, invia la notifica
+    if request.method == 'POST':
+        login = request.form.get('login')
+        if not login:
+            flash("Login mancante")
+            return redirect(url_for('notify.notify_group'))
 
-            # Send the email
-            server.sendmail(sender_mail, receiver_mail, msg.as_string())
+        # Recupera tutti i gruppi associati all'utente (admin) che sta inviando la notifica
+        admin_groups = Groups.select().where(Groups.login == login)
+        if not admin_groups.exists():
+            flash("Nessun gruppo associato all'utente")
+            return redirect(url_for('notify.notify_group'))
 
-        print("Email sent successfully!")
-    except smtplib.SMTPAuthenticationError:
-        print("Authentication failed. Check your email and password or App Password settings.")
-    except smtplib.SMTPException as e:
-        print(f"Error sending email: {e}")
+        sent_emails = []
+        # Per ciascun gruppo, recupera tutti gli utenti appartenenti
+        for admin_group in admin_groups:
+            group_value = admin_group.group
 
-# Call the send_mail function to send the email
-send_mail(sender_mail, password, receiver_mail, subject, message)
+            # Esegue una join tra Users e Groups per ottenere gli utenti del gruppo
+            query = (Users
+                     .select(Users.login)
+                     .join(Groups, on=(Users.login == Groups.login))
+                     .where(Groups.group == group_value))
+            
+            for user in query:
+                recipient_email = user.login  # Si assume che il campo 'login' contenga l'indirizzo email
+                if send_email_notification(recipient_email, "Notifica di Gruppo", "Questa è una notifica per il tuo gruppo"):
+                    sent_emails.append(recipient_email)
+        
+        flash("Notifica inviata a: " + ", ".join(sent_emails))
+        return redirect(url_for('notify.notify_group'))
+
+    # Se il metodo è GET, mostra il form di notifica
+    return render_template("notify.html", login=session.get('login'))
+
+# Registra la rotta sul blueprint, come nell'esempio di auth
+bp.route('/notify', methods=['GET', 'POST'])(notify_group)
