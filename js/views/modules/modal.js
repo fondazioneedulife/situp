@@ -58,7 +58,7 @@ export default function WarpModal() {
 
         for (var b of this.options.buttons) {
             var bElem = this.footerElement.appendChild( document.createElement("a") );
-            bElem.className = "modal-close waves-effect waves-orange btn-flat";
+            bElem.className = "modal-close waves-effect waves-blue btn-flat";
 
             bElem.href = "#!";
             bElem.innerText = b.text;

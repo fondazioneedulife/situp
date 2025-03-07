@@ -44,6 +44,7 @@ $materialize-red: (
   "darken-2":   #b9151b,
   "darken-3":   #a21318,
   "darken-4":   #8b1014,
+  "accent-7":    #ff7997,
 );
 
 $materialize-orange: (
@@ -85,4 +86,4 @@ $table-border-color: rgba(0,0,0,.12) !default;
 $table-striped-color: rgba(168, 4, 4, 0.5) !default;
 
 
-$primary-color: color("materialize-orange", "accent-4") !default;
+$primary-color: color("materialize-red", "accent-7") !default;

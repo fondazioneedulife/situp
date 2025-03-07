@@ -422,7 +422,7 @@ INPUT[type="text"] ~ .show_password_btn::after {
     border-top: 6px solid #ffe0b2;
     border-right: 6px solid #ffe0b2;
     border-bottom: 6px solid #ffe0b2;
-    border-left: 6px solid #ff6d00;
+    border-left: 6px solid #3b8b2f;
     animation: spinnerRotate 1s infinite linear;
 }
 

@@ -64,6 +64,9 @@ async function generateConfig() {
         maxEntrypointSize: 400000,
         maxAssetSize: 400000
       },
+      devServer: {
+       hot: true,
+      },
       optimization: {
         moduleIds: 'deterministic',
         runtimeChunk: {

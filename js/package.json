@@ -4,7 +4,8 @@
   "description": "",
   "main": "none",
   "scripts": {
-    "build": "webpack-cli"
+    "build": "webpack-cli",
+    "watch": "webpack-cli --watch"
   },
   "author": "Sebastian Baberowski <sebastian@baberowski.com>",
   "license": "UNLICENSED",
