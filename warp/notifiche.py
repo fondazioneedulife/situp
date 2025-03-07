@@ -1,39 +1,52 @@
 import smtplib
-from email.message import EmailMessage
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
-def send_occupazione_email():
-    """Invia una notifica email quando una scrivania viene occupata."""
+# Sender and receiver information
+sender_mail = 'andrea.canda88@gmail.com'
+# It's recommended to use environment variables or a secure method to handle passwords
+password = 'csri rkel zinr oggv'  # Ensure this is an App Password if using Gmail
+receiver_mail = 'andrea.canda88@gmail.com'
 
-    # Configurazione SMTP
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
-    smtp_user = "andrea.canda88@gmail.com"
-    smtp_pass = "csri rkel zinr oggv"  
-    mail_sender = smtp_user
-    mail_receiver = "andrea.canda88@gmail.com"
+# Email content
+subject = 'ATTENZIONE: SCRIVANIA OCCUPATA'
+message = ('Gentile dipendente,\n\n'
+           'La informiamo che la sua prenotazione per la scrivania è stata '
+           'cancellata a causa di una riunione all\'interno della vostra stanza.\n\n'
+           'Cordiali saluti,\n'
+           'Il Team')
 
-    # Creazione del messaggio email
-    msg = EmailMessage()
-    msg['Subject'] = "Notifica: Scrivania occupata"
-    msg['From'] = mail_sender
-    msg['To'] = mail_receiver
-    msg.set_content("La tua scrivania è stata occupata.")
+def send_mail(sender_mail, password, receiver_mail, subject, message):
+    smtp_server = 'smtp.gmail.com'
+    smtp_port = 587  # For TLS
 
-    # Invio email con gestione degli errori
+    # Create a multipart message
+    msg = MIMEMultipart()
+    msg['From'] = sender_mail
+    msg['To'] = receiver_mail
+    msg['Subject'] = subject
+
+    # Attach the message body
+    msg.attach(MIMEText(message, 'plain'))
+
     try:
+        # Connect to the Gmail SMTP server
         with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()  # Attiva la sicurezza TLS
-            server.login(smtp_user, smtp_pass)  # Autenticazione SMTP
-            server.send_message(msg)  # Invio email
+            server.ehlo()  # Can be omitted; sometimes needed
+            server.starttls()  # Secure the connection
+            server.ehlo()  # Re-identify after starting TLS
 
-        print(f"✅ Email inviata con successo a {mail_receiver}")
+            # Log in to the server
+            server.login(sender_mail, password)
 
+            # Send the email
+            server.sendmail(sender_mail, receiver_mail, msg.as_string())
+
+        print("Email sent successfully!")
     except smtplib.SMTPAuthenticationError:
-        print("❌ Errore di autenticazione: verifica username e password.")
-    except smtplib.SMTPConnectError:
-        print("❌ Errore di connessione al server SMTP.")
+        print("Authentication failed. Check your email and password or App Password settings.")
     except smtplib.SMTPException as e:
-        print(f"❌ Errore SMTP: {e}")
+        print(f"Error sending email: {e}")
 
-# Esegui l'invio email
-send_occupazione_email()
+# Call the send_mail function to send the email
+send_mail(sender_mail, password, receiver_mail, subject, message)
