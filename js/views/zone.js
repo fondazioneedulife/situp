@@ -3,10 +3,10 @@
 import Utils from './modules/utils.js';
 import WarpModal from './modules/modal.js';
 import {WarpSeatFactory,WarpSeat} from './modules/seat.js';
+import { Calendar, Options } from 'vanilla-calendar-pro';
+import 'vanilla-calendar-pro/styles/index.css';
 import ZoneUserData from './modules/zoneuserdata.js';
 import BookAs from './modules/bookas.js';
-
-import noUiSlider from 'nouislider';
 import "./css/zone/nouislider_materialize.scss";
 
 function downloadSeatData(seatFactory) {
@@ -48,28 +48,40 @@ function getSelectedDates() {
     return res;
 }
 
+
 function initSlider() {
-
-    var slider = document.getElementById('timeslider');
-    noUiSlider.create(slider, {
-        start: window.warpGlobals['defaultSelectedDates'].slider,    //this later on can be anyway overwritten from session storage
-        connect: true,
-        behaviour: 'drag',
-        step: 15*60,
-        margin: 15*60,
-        orientation: 'vertical',
-        range: { 'min': 0, 'max': 24*3600 }
-    });
-
-    var minDiv = document.getElementById('timeslider-min');
-    var maxDiv = document.getElementById('timeslider-max');
-    slider.noUiSlider.on('update', function(values, handle, unencoded, tap, positions, noUiSlider) {
-        minDiv.innerText = new Date(unencoded[0]*1000).toISOString().substring(11,16)
-        maxDiv.innerText = unencoded[1] == 24*3600? "23:59": new Date(unencoded[1]*1000).toISOString().substring(11,16);
-    });
-
-    return slider;
-}
+    // Configurazione del calendario: 
+    // "selectionTimeMode" indica la modalità oraria (24 ore)
+    // "onChangeTime" viene chiamato ogni volta che l'utente modifica l'orario
+    const options = {
+      selectionTimeMode: 24,
+      onChangeTime(self) {
+        // Log dell'orario selezionato
+        console.log("Selected time:", self.context.selectedTime);
+        
+        // Se il calendario restituisce un intervallo (array con [min, max]),
+        // aggiorniamo gli elementi dell'interfaccia utente.
+        if (Array.isArray(self.context.selectedTime)) {
+          const [minTime, maxTime] = self.context.selectedTime;
+          document.getElementById('timeslider-min').innerText = formatTime(minTime);
+          // Se il valore massimo è pari a 24*3600, mostriamo "23:59" per indicare la fine della giornata
+          document.getElementById('timeslider-max').innerText = 
+            (maxTime === 24 * 3600) ? "23:59" : formatTime(maxTime);
+        }
+      }
+    };
+  
+    // Inizializza il calendario sul selettore "#timeslider"
+    const calendar = new Calendar('#timeslider', options);
+    calendar.init();
+    
+    // Funzione helper per formattare l'orario (da secondi a "HH:MM")
+    function formatTime(timeInSeconds) {
+      return new Date(timeInSeconds * 1000).toISOString().substring(11, 16);
+    }
+  }
+  
+  
 
 function initSeats() {
 

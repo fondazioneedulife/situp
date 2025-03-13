@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function(e) {
         };
 
         if (warpGlobals.i18n.datePicker) {
-            pickerOptions.firstDay = warpGlobals.i18n.datePicker.firstDay;
+            pickerOptions.firstDay = warpGlobals.i18n.datePicker.firstDay;      
             pickerOptions.i18n = warpGlobals.i18n.datePicker.i18n_object;
         }
 
