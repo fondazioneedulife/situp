@@ -143,17 +143,14 @@
         
         <div id="zone_sidepanel">
             <div class="zone_sidepanel_topcontainer">
-        
-                <div class="input-field book-as_container">
-                    <input type="text" id="book-as" class="autocomplete book-as_input" autocomplete="off">
-                    <label for="book-as" class="active TR">Book as</label>
-                </div>
-        
-                <div class="zone_sidepanel_close sidenav-close" data-target="zone_sidepanel">
-                    <i class="material-icons">close</i>
-                </div>
+              <div class="input-field book-as_container">
+                <input type="text" id="book-as" class="autocomplete book-as_input" autocomplete="off">
+                <label for="book-as" class="active TR">Book as</label>
+              </div>
+              <div class="zone_sidepanel_close sidenav-close" data-target="zone_sidepanel">
+                <i class="material-icons">close</i>
+              </div>
             </div>
-        
             <div class="zone_datetime_container">
         
                 <!-- div class="zone_datelist">
@@ -170,12 +167,13 @@
                     {% endfor %}
                 </div>
          -->
-                <div class="zone_timeslider">
-                    <div id="timeslider" class="timeslider"></div>
-                </div>
+            <!-- Il calendario verrà inizializzato su questo elemento -->
+            <div id="timeslider" class="timeslider"></div>
+            <!-- Etichette per il valore minimo e massimo -->
+            <div class="timeslider_labels">
+              <span id="timeslider-min"></span> - <span id="timeslider-max"></span>
             </div>
-
-
+            </div>
         </div>
 
 

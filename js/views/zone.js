@@ -7,121 +7,116 @@ import { Calendar, Options } from 'vanilla-calendar-pro';
 import 'vanilla-calendar-pro/styles/index.css';
 import ZoneUserData from './modules/zoneuserdata.js';
 import BookAs from './modules/bookas.js';
-import "./css/zone/nouislider_materialize.scss";
+"use strict";
+// Rimuoviamo noUiSlider e il relativo CSS perché non lo usiamo più
+// import noUiSlider from 'nouislider';
+// import "./css/zone/nouislider_materialize.scss";
+
+// La variabile globale che contiene il range orario selezionato (in secondi)
+window.selectedTimeRange = [0, 24 * 3600];
 
 function downloadSeatData(seatFactory) {
-
     var url = window.warpGlobals.URLs['getSeat'];
-
     var login = seatFactory.getLogin();
     if (login !== window.warpGlobals.login)
         url += "?login=" + login;
 
-    Utils.xhr.get(url, {toastOnSuccess:false})
-    .then( function(v) {
-
-        seatFactory.setSeatsData(v.response);
-        seatFactory.updateAllStates( getSelectedDates());
-
-    })
+    Utils.xhr.get(url, { toastOnSuccess: false })
+        .then(function (v) {
+            seatFactory.setSeatsData(v.response);
+            seatFactory.updateAllStates(getSelectedDates());
+        });
 }
 
 function getSelectedDates() {
-    var slider = document.getElementById('timeslider');
-    var times = slider.noUiSlider.get(true);
+    // Utilizziamo il range orario aggiornato dal calendario
+    var times = window.selectedTimeRange || [0, 24 * 3600];
 
-    // if next day 00:00, move it one second back
-    if (times[1] == 24*3600)
-        times[1] = 24*3600-1;
+    // Se il valore massimo è 24:00 (in secondi) lo riportiamo a 23:59
+    if (times[1] == 24 * 3600)
+        times[1] = 24 * 3600 - 1;
 
     var res = [];
-
     for (var e of document.getElementsByClassName('date_checkbox')) {
         if (e.checked) {
-            res.push( {
+            res.push({
                 fromTS: parseInt(e.value) + parseInt(times[0]),
                 toTS: parseInt(e.value) + parseInt(times[1])
             });
         }
-    };
-
+    }
     return res;
 }
 
-
 function initSlider() {
-    // Configurazione del calendario: 
+    // Configurazione del calendario:
     // "selectionTimeMode" indica la modalità oraria (24 ore)
     // "onChangeTime" viene chiamato ogni volta che l'utente modifica l'orario
     const options = {
-      selectionTimeMode: 24,
-      onChangeTime(self) {
-        // Log dell'orario selezionato
-        console.log("Selected time:", self.context.selectedTime);
-        
-        // Se il calendario restituisce un intervallo (array con [min, max]),
-        // aggiorniamo gli elementi dell'interfaccia utente.
-        if (Array.isArray(self.context.selectedTime)) {
-          const [minTime, maxTime] = self.context.selectedTime;
-          document.getElementById('timeslider-min').innerText = formatTime(minTime);
-          // Se il valore massimo è pari a 24*3600, mostriamo "23:59" per indicare la fine della giornata
-          document.getElementById('timeslider-max').innerText = 
-            (maxTime === 24 * 3600) ? "23:59" : formatTime(maxTime);
+        selectionTimeMode: 24,
+        onChangeTime(self) {
+            console.log("Selected time:", self.context.selectedTime);
+            if (Array.isArray(self.context.selectedTime)) {
+                const [minTime, maxTime] = self.context.selectedTime;
+                document.getElementById('timeslider-min').innerText = formatTime(minTime);
+                document.getElementById('timeslider-max').innerText = (maxTime === 24 * 3600) ? "23:59" : formatTime(maxTime);
+                // Aggiorniamo la variabile globale con il range selezionato
+                window.selectedTimeRange = [minTime, maxTime];
+                // Aggiorniamo anche il sessionStorage
+                let zoneSelections = JSON.parse(window.sessionStorage.getItem('zoneSelections')) || {};
+                zoneSelections.slider = [minTime, maxTime];
+                window.sessionStorage.setItem('zoneSelections', JSON.stringify(zoneSelections));
+            }
         }
-      }
     };
-  
+
     // Inizializza il calendario sul selettore "#timeslider"
     const calendar = new Calendar('#timeslider', options);
     calendar.init();
-    
+    // Salviamo l'istanza del calendario se serve in futuro
+    window.myCalendar = calendar;
+
     // Funzione helper per formattare l'orario (da secondi a "HH:MM")
     function formatTime(timeInSeconds) {
-      return new Date(timeInSeconds * 1000).toISOString().substring(11, 16);
+        return new Date(timeInSeconds * 1000).toISOString().substring(11, 16);
     }
-  }
-  
-  
+}
 
 function initSeats() {
-
     var seatFactory = new WarpSeatFactory(
         window.warpGlobals.URLs['seatSprite'],
         "zonemap",
-        window.warpGlobals.login);
+        window.warpGlobals.login
+    );
 
-    // register WarpSeats for updates
-    var updateSeatsView = function() {
+    // Aggiorna lo stato dei posti in base al range di date/orari selezionati
+    var updateSeatsView = function () {
         var dates = getSelectedDates();
         seatFactory.updateAllStates(dates);
-    }
+    };
 
-    var slider = document.getElementById('timeslider');
-    slider.noUiSlider.on('update', updateSeatsView);
-
+    // Dal momento che ora il "slider" è gestito dal calendario, 
+    // la chiamata all'update avviene via onChangeTime del calendario (vedi initSlider)
+    // Aggiungiamo comunque il listener per le checkbox
     for (var e of document.getElementsByClassName('date_checkbox')) {
-        e.addEventListener('change',updateSeatsView);
+        e.addEventListener('change', updateSeatsView);
     }
 
     return seatFactory;
 }
 
 function initSeatPreview(seatFactory) {
-
     var zoneMap = document.getElementById("zonemap");
 
-    seatFactory.on( 'mouseover', function() {
-
+    seatFactory.on('mouseover', function () {
         var previewDiv = document.createElement("div");
         previewDiv.className = 'seat_preview';
 
         var previewTitle = previewDiv.appendChild(document.createElement("div"));
-        previewTitle.innerText = TR("Seat %{seat_name}",{seat_name: this.getName()});
+        previewTitle.innerText = TR("Seat %{seat_name}", { seat_name: this.getName() });
         previewTitle.className = "seat_preview_title";
 
-        // position of the frame
         var pands = this.getPositionAndSize();
-
         var parentWidth = zoneMap.clientWidth;
         var clientPosX = pands.x - zoneMap.scrollLeft;
 
@@ -146,65 +141,58 @@ function initSeatPreview(seatFactory) {
             previewDiv.style.bottom = (parentHeight - pands.y - pands.size * 0.30) + "px";
         }
 
-        // content of the frame
         var assignments = Object.values(this.getAssignments());
         if (assignments.length) {
-
             var header = previewDiv.appendChild(document.createElement("span"));
             header.appendChild(document.createTextNode(TR("Assigned to:")));
             header.className = "seat_preview_header";
 
-            var table =  previewDiv.appendChild(document.createElement("table"));
+            var table = previewDiv.appendChild(document.createElement("table"));
             for (let a of assignments) {
-                var tr = table.appendChild( document.createElement("tr"));
-                tr.appendChild( document.createElement("td")).appendChild( document.createTextNode(a));
+                var tr = table.appendChild(document.createElement("tr"));
+                tr.appendChild(document.createElement("td")).appendChild(document.createTextNode(a));
             }
         }
 
         var bookings = this.getBookings();
         if (bookings.length) {
-
-            var header = previewDiv.appendChild(document.createElement("span"))
+            var header = previewDiv.appendChild(document.createElement("span"));
             header.appendChild(document.createTextNode(TR("Bookings:")));
             header.className = "seat_preview_header";
 
-            var table =  previewDiv.appendChild(document.createElement("table"));
+            var table = previewDiv.appendChild(document.createElement("table"));
             var maxToShow = 8;
 
             for (var b of bookings) {
-
                 if (maxToShow-- == 0) {
                     b.datetime1 = "...";
                     b.datetime2 = "";
                     b.username = "";
                 }
 
-                var tr = table.appendChild( document.createElement("tr"));
-                tr.appendChild( document.createElement("td")).innerText = b.datetime1;
-                tr.appendChild( document.createElement("td")).innerText = b.datetime2;
-                tr.appendChild( document.createElement("td")).innerText = b.username;
+                var tr = table.appendChild(document.createElement("tr"));
+                tr.appendChild(document.createElement("td")).innerText = b.datetime1;
+                tr.appendChild(document.createElement("td")).innerText = b.datetime2;
+                tr.appendChild(document.createElement("td")).innerText = b.username;
 
                 if (maxToShow == 0)
                     break;
             }
         }
-
         zoneMap.appendChild(previewDiv);
     });
 
-    seatFactory.on( 'mouseout', function() {
+    seatFactory.on('mouseout', function () {
         var previewDivs = document.getElementsByClassName('seat_preview');
         for (var d of previewDivs) {
             d.remove();
         }
     });
-
 }
 
 function initAssignedSeatsModal(seat) {
-
     var assignModalEl = document.getElementById("assigned_seat_modal");
-    if (!assignModalEl || typeof(ZoneUserData) === 'undefined')
+    if (!assignModalEl || typeof (ZoneUserData) === 'undefined')
         return null;
 
     var assignModal = M.Modal.getInstance(assignModalEl);
@@ -213,30 +201,25 @@ function initAssignedSeatsModal(seat) {
     }
 
     var zoneUserData = ZoneUserData.getInstance();
-
     var chipsEl = document.getElementById('assigned_seat_chips');
-
     var chipsOptions;
     var chips = M.Chips.getInstance(chipsEl);
     if (chips) {
         chipsOptions = chips.options;
-        chips.destroy(); // we have to recreate chips instance to clean up all chips inside
+        chips.destroy();
     }
     else {
-
-        var onChipApp = function(chip) {
-
-            var i = this.chipsData.length - 1;  // chips are always pushed
+        var onChipApp = function (chip) {
+            var i = this.chipsData.length - 1;
             var t = this.chipsData[i].tag;
-
             if (!(t in this.autocomplete.options.data)) {
                 this.deleteChip(i);
             }
-        }
+        };
 
         var chipsAutocompleteData = {};
         for (let d of zoneUserData.formatedIterator()) {
-            chipsAutocompleteData[ d] = null;
+            chipsAutocompleteData[d] = null;
         }
 
         chipsOptions = {
@@ -254,37 +237,24 @@ function initAssignedSeatsModal(seat) {
     }
 
     chips = M.Chips.init(chipsEl, chipsOptions);
-
     var assignments = seat.getAssignments();
     for (let login in assignments) {
-        chips.addChip({tag: ZoneUserData.makeUserStr(login,assignments[login])})
+        chips.addChip({ tag: ZoneUserData.makeUserStr(login, assignments[login]) });
     }
-
     return assignModal;
 }
 
-
 function initActionMenu(seatFactory) {
-
     if (window.warpGlobals.isZoneViewer)
         return;
 
-    var seat = null;    // used for passing seat to btn click events (closure)
-                        // it is set at the end of seatFactory.on('click'
-                        // it is used in actionBtn click event
-                        // and it is reset (to release reference) in actionModal onCloseEnd event
-
-    // init modal
+    var seat = null;
     var actionEl = document.getElementById('action_modal');
-    var actionModal =  M.Modal.init(actionEl);
-
-    // register hooks
+    var actionModal = M.Modal.init(actionEl);
     var actionBtns = document.getElementsByClassName('zone_action_btn');
 
-    seatFactory.on( 'click', function() {
-
+    seatFactory.on('click', function () {
         var state = this.getState();
-
         if (state == WarpSeat.SeatStates.NOT_AVAILABLE)
             return;
 
@@ -299,7 +269,7 @@ function initActionMenu(seatFactory) {
                 break;
             case WarpSeat.SeatStates.CAN_CHANGE:
                 actions.push('delete');
-                // no break here
+                // non interrompiamo qui
             case WarpSeat.SeatStates.CAN_REBOOK:
                 actions.push('update');
                 bookMsg = removeMsg = true;
@@ -327,18 +297,15 @@ function initActionMenu(seatFactory) {
         msg1El.innerHTML = "";
 
         if (bookMsg) {
-
             var bookDatesTable = document.createElement("table");
             for (let d of getSelectedDates()) {
                 let f = WarpSeatFactory._formatDatePair(d);
                 let tr = bookDatesTable.appendChild(document.createElement("tr"));
-                tr.appendChild( document.createElement("td")).innerText = f.datetime1;
-                tr.appendChild( document.createElement("td")).innerText = f.datetime2;
+                tr.appendChild(document.createElement("td")).innerText = f.datetime1;
+                tr.appendChild(document.createElement("td")).innerText = f.datetime2;
             }
-
             let p = document.createElement('P');
-            p.innerText = TR("Seat %{seat_name} to be booked:",{seat_name:this.getName()});
-
+            p.innerText = TR("Seat %{seat_name} to be booked:", { seat_name: this.getName() });
             msg1El.appendChild(p);
             msg1El.appendChild(bookDatesTable);
         }
@@ -347,41 +314,29 @@ function initActionMenu(seatFactory) {
         msg2El.innerHTML = "";
 
         if (removeMsg) {
-
             var myConflictsTable = document.createElement("table");
             for (let c of seatFactory.getMyConflictingBookings()) {
                 let tr = myConflictsTable.appendChild(document.createElement("tr"));
-                tr.appendChild( document.createElement("td")).innerText = c.zone_name
-                tr.appendChild( document.createElement("td")).innerText = c.seat_name;
-                tr.appendChild( document.createElement("td")).innerText = c.datetime1;
-                tr.appendChild( document.createElement("td")).innerText = c.datetime2;
+                tr.appendChild(document.createElement("td")).innerText = c.zone_name;
+                tr.appendChild(document.createElement("td")).innerText = c.seat_name;
+                tr.appendChild(document.createElement("td")).innerText = c.datetime1;
+                tr.appendChild(document.createElement("td")).innerText = c.datetime2;
             }
-
             let p = document.createElement('P');
             p.innerText = TR("To be removed:");
-
             msg2El.appendChild(p);
             msg2El.appendChild(myConflictsTable);
         }
 
         for (let btn of actionBtns) {
-            if (actions.includes(btn.dataset.action))
-                btn.style.display = "inline-block";
-            else
-                btn.style.display = "none";
+            btn.style.display = actions.includes(btn.dataset.action) ? "inline-block" : "none";
         }
-
-        //var actionElTitle = document.getElementById('action_modal_title');
-        //actionElTitle.innerText = "Seat: "+this.getName();
 
         seat = this;
         actionModal.open();
     });
 
-    var actionBtnClicked = function(e) {
-
-        // this is not a real action, it should just show modal
-        // real action button is inside modal
+    var actionBtnClicked = function (e) {
         if (this.dataset.action == 'assign-modal') {
             var assignModal = initAssignedSeatsModal(seat);
             document.getElementById('assigned_seat_chips').focus();
@@ -390,33 +345,28 @@ function initActionMenu(seatFactory) {
         }
 
         var applyData = {};
-
-        if (this.dataset.action == "assign" && typeof(ZoneUserData) !== 'undefined') {
-
+        if (this.dataset.action == "assign" && typeof (ZoneUserData) !== 'undefined') {
             var chipsEl = document.getElementById('assigned_seat_chips');
             var chips = M.Chips.getInstance(chipsEl);
-
             var logins = [];
             for (var c of chips.getData()) {
                 logins.push(ZoneUserData.makeUserStrRev(c.tag));
             }
-
             applyData['assign'] = {
                 sid: seat.getSid(),
                 logins: logins
-            }
+            };
         }
 
         if (this.dataset.action == 'enable' || this.dataset.action == 'disable') {
-            applyData[this.dataset.action] = [ seat.getSid() ];
+            applyData[this.dataset.action] = [seat.getSid()];
         }
 
         if (this.dataset.action == 'book' || this.dataset.action == 'update') {
             applyData['book'] = {
                 sid: seat.getSid(),
                 dates: getSelectedDates()
-            }
-
+            };
             if (window.warpGlobals.isZoneAdmin) {
                 let login = BookAs.getInstance().getSelectedLogin(true);
                 if (login !== null)
@@ -431,204 +381,168 @@ function initActionMenu(seatFactory) {
         Utils.xhr.post(
             window.warpGlobals.URLs['zoneApply'],
             applyData,
-            {toastOnSuccess: false})
-        .then( (value) => {
-
+            { toastOnSuccess: false }
+        ).then((value) => {
             var msg = "";
-
             if (value.response.conflicts_in_disable) {
                 msg += TR("Seat is successfully disabled.<br>However there are existing reservations in the the next few weeks. " +
-                      "Existing reservations are not automatically removed, it has to be done manually.<br><br>");
+                    "Existing reservations are not automatically removed, it has to be done manually.<br><br>");
                 let rList = [];
                 for (let r of value.response.conflicts_in_disable) {
                     let dateStr = WarpSeatFactory._formatDatePair(r);
-                    rList.push( r.username + "&nbsp;on&nbsp;" + dateStr.datetime1 + "&nbsp;" + dateStr.datetime2);
+                    rList.push(r.username + "&nbsp;on&nbsp;" + dateStr.datetime1 + "&nbsp;" + dateStr.datetime2);
                 }
                 msg += rList.join('<br>');
             }
 
             if (value.response.conflicts_in_assign) {
                 msg += TR("Seat is successfully assigned.<br>However there are non-assignees' existing reservations in the the next few weeks. " +
-                      "Existing reservations are not automatically removed, it has to be done manually.<br><br>");
+                    "Existing reservations are not automatically removed, it has to be done manually.<br><br>");
                 let rList = [];
                 for (let r of value.response.conflicts_in_assign) {
                     let dateStr = WarpSeatFactory._formatDatePair(r);
-                    rList.push( r.username + "&nbsp;on&nbsp;" + dateStr.datetime1 + "&nbsp;" + dateStr.datetime2);
+                    rList.push(r.username + "&nbsp;on&nbsp;" + dateStr.datetime1 + "&nbsp;" + dateStr.datetime2);
                 }
                 msg += rList.join('<br>');
             }
 
             if (msg == "")
-                M.toast({text: TR('Action successfull.')});
+                M.toast({ text: TR('Action successfull.') });
             else
-                WarpModal.getInstance().open(TR("Warning"),msg);
+                WarpModal.getInstance().open(TR("Warning"), msg);
 
             downloadSeatData(seatFactory);
-        }).catch( (value) => {
+        }).catch((value) => {
             downloadSeatData(seatFactory);
         });
-
     };
 
     for (let btn of actionBtns)
-        btn.addEventListener('click',actionBtnClicked)
+        btn.addEventListener('click', actionBtnClicked);
 
     return actionModal;
 }
 
-// preserves states across pages
 function initDateSelectorStorage() {
-
     var storage = window.sessionStorage;
-
-    // restore values from session storage
     var restoredSelections = storage.getItem('zoneSelections');
-    restoredSelections = restoredSelections? JSON.parse(restoredSelections): window.warpGlobals['defaultSelectedDates'];
+    restoredSelections = restoredSelections ? JSON.parse(restoredSelections) : window.warpGlobals['defaultSelectedDates'];
+    let cleanCBSelections = [];
 
-    let cleanCBSelections = []; // used to clean up the list of checkboxes doesn't exist anymore
-
-    // if nothing is selected, let's force default selection, hence 2 tries
+    // Se niente è selezionato, forziamo il default (2 tentativi)
     for (let i = 0; i < 2; ++i) {
-
         for (let cb of document.getElementsByClassName('date_checkbox')) {
-            let ts = parseInt(cb.value)
+            let ts = parseInt(cb.value);
             if (restoredSelections.cb.includes(ts)) {
                 cb.checked = true;
                 cleanCBSelections.push(ts);
             }
         }
-
         if (cleanCBSelections.length)
             break;
-
         restoredSelections.cb = window.warpGlobals['defaultSelectedDates'].cb;
     }
-
     restoredSelections.cb = cleanCBSelections;
 
-    var slider = document.getElementById('timeslider');
-    slider.noUiSlider.set(restoredSelections.slider);
+    // Aggiorniamo manualmente il display del calendario con il valore ripristinato
+    if (restoredSelections.slider) {
+        window.selectedTimeRange = restoredSelections.slider;
+        const minDiv = document.getElementById('timeslider-min');
+        const maxDiv = document.getElementById('timeslider-max');
+        function formatTime(timeInSeconds) {
+            return new Date(timeInSeconds * 1000).toISOString().substring(11, 16);
+        }
+        minDiv.innerText = formatTime(restoredSelections.slider[0]);
+        maxDiv.innerText = (restoredSelections.slider[1] == 24 * 3600 ? "23:59" : formatTime(restoredSelections.slider[1]));
+    }
 
     storage.setItem('zoneSelections', JSON.stringify(restoredSelections));
 
-    var cbChange = function(e) {
-        let zoneSelections = JSON.parse( storage.getItem('zoneSelections'));
-
+    var cbChange = function (e) {
+        let zoneSelections = JSON.parse(storage.getItem('zoneSelections'));
         let ts = parseInt(this.value);
         if (this.checked)
             zoneSelections.cb.push(ts);
         else
-            zoneSelections.cb.splice( zoneSelections.cb.indexOf(ts), 1);
-
+            zoneSelections.cb.splice(zoneSelections.cb.indexOf(ts), 1);
         storage.setItem('zoneSelections', JSON.stringify(zoneSelections));
-    }
+    };
 
     for (let cb of document.getElementsByClassName('date_checkbox'))
         cb.addEventListener('change', cbChange);
-
-    slider.noUiSlider.on('update', function(values, handle, unencoded, tap, positions, noUiSlider) {
-
-        let zoneSelections = JSON.parse( storage.getItem('zoneSelections'));
-        zoneSelections.slider = values;
-        storage.setItem('zoneSelections', JSON.stringify(zoneSelections));
-
-    });
-
+    // Non serve più associare eventi al vecchio noUiSlider
 }
 
 function initShiftSelectDates() {
-
-    // find lowest selected value
     var lastSelectedValue = 0;
     for (let cb of document.getElementsByClassName('date_checkbox')) {
         if (cb.checked) {
             if (lastSelectedValue === 0)
                 lastSelectedValue = parseInt(cb.value);
             else
-                lastSelectedValue = Math.min( parseInt(cb.value), lastSelectedValue);
+                lastSelectedValue = Math.min(parseInt(cb.value), lastSelectedValue);
         }
     }
 
-    var cbClick = function(e) {
-
-        if (e.shiftKey)
-        {
-            var targetState = this.checked; // materialize has already changed the state
-            var minValue  = Math.min( parseInt(this.value), lastSelectedValue);
-            var maxValue  = Math.max( parseInt(this.value), lastSelectedValue);
-
+    var cbClick = function (e) {
+        if (e.shiftKey) {
+            var targetState = this.checked;
+            var minValue = Math.min(parseInt(this.value), lastSelectedValue);
+            var maxValue = Math.max(parseInt(this.value), lastSelectedValue);
             for (let cb of document.getElementsByClassName('date_checkbox')) {
                 if (parseInt(cb.value) >= minValue && parseInt(cb.value) <= maxValue) {
                     if (cb != this && cb.checked != targetState) {
                         cb.checked = targetState;
-                        cb.dispatchEvent(
-                            new Event('change', {bubbles: true, cancelable: false}));
+                        cb.dispatchEvent(new Event('change', { bubbles: true, cancelable: false }));
                     }
                 }
-
             }
-
-            // we should not call preventDefault() as this checkbox must be switched as well (and 'change' event dispatched)
         }
-
         lastSelectedValue = parseInt(this.value);
-    }
+    };
 
     for (let cb of document.getElementsByClassName('date_checkbox'))
         cb.addEventListener('click', cbClick);
-
 }
 
 function initZoneHelp() {
-
     var helpModalEl = document.getElementById('zonemap_help_modal');
     var helpModal = M.Modal.init(helpModalEl);
-
     var helpModalSpriteDivs = document.getElementsByClassName("help_modal_sprite");
     for (let d of helpModalSpriteDivs) {
         d.style.width = WarpSeat.Sprites.spriteSize + "px";
         d.style.height = WarpSeat.Sprites.spriteSize + "px";
-        d.style.backgroundImage = 'url('+window.warpGlobals.URLs['seatSprite']+')';
-
+        d.style.backgroundImage = 'url(' + window.warpGlobals.URLs['seatSprite'] + ')';
         var type = d.dataset.sprite + "Offset";
         d.style.backgroundPositionX = WarpSeat.Sprites[type];
     }
-
     var helpDiv = document.getElementsByClassName("zonemap_help");
     for (let d of helpDiv) {
-        d.addEventListener('click', function() { helpModal.open(); } )
+        d.addEventListener('click', function () { helpModal.open(); });
     }
-
-
 }
 
 function initZoneSidepanel() {
-
     var el = document.getElementById('zone_sidepanel');
     M.Sidenav.init(el, {
-        onCloseEnd: function(e) {
+        onCloseEnd: function (e) {
             e.style.transform = "";
         }
     });
 }
 
 function initBookAs(seatFactory) {
-
-    BookAs.getInstance().on('change', function(newLogin) {
-
+    BookAs.getInstance().on('change', function (newLogin) {
         var url = window.warpGlobals.URLs['getSeat'] + "?onlyOtherZone=1&login=" + newLogin;
-        Utils.xhr.get(url,{toastOnSuccess: false})
-        .then( function(v) {
-            seatFactory.updateLogin(newLogin, v.response);
-            seatFactory.updateAllStates( getSelectedDates());
-
-        });
-    })
-
+        Utils.xhr.get(url, { toastOnSuccess: false })
+            .then(function (v) {
+                seatFactory.updateLogin(newLogin, v.response);
+                seatFactory.updateAllStates(getSelectedDates());
+            });
+    });
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-
+document.addEventListener("DOMContentLoaded", function () {
     initSlider();
     initDateSelectorStorage();
     initShiftSelectDates();
