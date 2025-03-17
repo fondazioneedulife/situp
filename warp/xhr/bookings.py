@@ -145,7 +145,7 @@ def listW(report = False):      # list is a built-in type
         return flask.send_file(
             memoryBuffer,
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            download_name="warp_export.xlsx"
+            download_name="bookings_export.xlsx"
         )
 
     else:
